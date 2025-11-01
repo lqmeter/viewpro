@@ -25,8 +25,15 @@ def backtest_signals(
 ) -> BacktestResult:
     """Run a simple long-only backtest given long/short boolean signals."""
     closes = data["close"].reset_index(drop=True)
-    long_signal = (long_signal or pd.Series(False, index=closes.index)).reindex(closes.index, fill_value=False)
-    short_signal = (short_signal or pd.Series(False, index=closes.index)).reindex(closes.index, fill_value=False)
+    if long_signal is None:
+        long_signal = pd.Series(False, index=closes.index)
+    else:
+        long_signal = long_signal.reindex(closes.index, fill_value=False)
+
+    if short_signal is None:
+        short_signal = pd.Series(False, index=closes.index)
+    else:
+        short_signal = short_signal.reindex(closes.index, fill_value=False)
 
     position = 0.0
     cash = initial_capital

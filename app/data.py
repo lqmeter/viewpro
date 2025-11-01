@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
 from typing import Optional
 
 import pandas as pd
@@ -51,8 +50,13 @@ def fetch_ohlcv(request: OHLCVRequest) -> pd.DataFrame:
     )
     history.index.name = "timestamp"
 
-    end_time = datetime.utcnow()
-    start_time = end_time - timedelta(days=request.lookback_days)
+    index_tz = history.index.tz
+    if index_tz is not None:
+        end_time = pd.Timestamp.now(tz=index_tz)
+    else:
+        end_time = pd.Timestamp.utcnow()
+
+    start_time = end_time - pd.Timedelta(days=request.lookback_days)
     trimmed = history.loc[history.index >= start_time]
 
     if trimmed.empty:
